@@ -1,0 +1,17 @@
+inherit: [ l4re ]
+
+environment:
+    # Force performance configuration and enable user space access to
+    # performance counters.
+    FIASCO_KCONFIG: |
+        ${FIASCO_KCONFIG:-}
+        CONFIG_PERF_CNT_USER=y
+        CONFIG_EXPERT=y
+        CONFIG_PERFORMANCE=y
+
+buildScript: |
+    l4reBuildImages \
+      -m "${BOB_DEP_PATHS[core::l4re]}"/assets/modlist/ipcbench/modules.list
+
+packageScript: |
+    l4reInstallImages

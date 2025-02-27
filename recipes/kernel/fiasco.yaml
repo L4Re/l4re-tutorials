@@ -1,0 +1,35 @@
+inherit: [make]
+
+checkoutSCM:
+  - scm: git
+    url: https://github.com/kernkonzept/fiasco.git
+
+buildTools: [host-toolchain, target-toolchain, flex, bison]
+buildVars: [CC, CXX, LD, CROSS_COMPILE, FIASCO_DEFCONFIG, FIASCO_KCONFIG]
+buildScript: |
+  if [ ! -e build ] ; then
+    if [[ -n ${FIASCO_KCONFIG+true} ]] ; then
+      make -C "$1" B=$PWD/build
+      pushd build
+      if [[ -n ${FIASCO_DEFCONFIG+true} ]] ; then
+        cp "$1/src/templates/globalconfig.out.$FIASCO_DEFCONFIG" globalconfig.out
+      else
+        rm -f globalconfig.out
+      fi
+      printf "$FIASCO_KCONFIG" >> globalconfig.out
+      make olddefconfig
+      popd
+    elif [[ -n ${FIASCO_DEFCONFIG+true} ]] ; then
+      make -C "$1" B=$PWD/build T="$FIASCO_DEFCONFIG"
+    else
+      echo "Error: neither FIASCO_DEFCONFIG nor FIASCO_KCONFIG set!" >&2
+      exit 1
+    fi
+  fi
+
+  pushd build
+  makeParallel
+  popd
+
+packageScript: |
+  cp "$1/build/fiasco" .

@@ -1,0 +1,23 @@
+inherit: [ "rootfs::cpio" ]
+
+depends:
+    - libs::libc-tgt
+    - core::busybox
+
+checkoutSCM:
+  scm: import
+  url: recipes/examples/guests/linux-initramfs
+
+buildTools: [target-toolchain]
+buildVars: [SYSROOT]
+buildScript: |
+    rootfsCopy "$PWD/install" "$@"
+
+    mkdir -p install/{dev,etc/init.d,proc,sys}
+    ln -sf bin/busybox install/init
+
+    CREATE_SH_FILE= rootfsCpioCreateImage install/ initramfs
+
+packageTools: [cpio]
+packageScript: |
+    cp "$1/initramfs.cpio.gz" .

@@ -1,0 +1,16 @@
+checkoutSCM:
+    - scm: git
+      url: https://github.com/kernkonzept/mk.git
+      commit: ee00632645fc35b933258e9075fdbc095b0e6fb6
+      shallow: "2024-11-19"
+
+buildScript: |
+    mkdir -p bin lib
+    cp "$1/tool/bin/l4image" bin/
+    cp -r "$1/tool/lib/L4" lib/
+
+packageScript: |
+    cp -r $1/* .
+
+provideTools:
+    l4image: bin

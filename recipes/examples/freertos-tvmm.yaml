@@ -1,0 +1,24 @@
+inherit: [ l4re ]
+
+depends:
+    - examples::guests::freertos-tvmm
+
+buildScript: |
+    cp $<<freertos-tvmm/freertos.inittab>> inittab
+
+    cat >modules.list <<EOF
+    entry[no-defaults] freertos
+    modaddr 0x0f000000
+    kernel fiasco -serial_esc
+    sigma0 tinit
+    module tvmm
+    module inittab
+    module[fname=guest1.elf] freertos-guest1.elf
+    module[fname=guest2.elf] freertos-guest2.elf
+    EOF
+
+    l4reBuildImages "$@"
+
+packageScript: |
+    l4reInstallImages
+

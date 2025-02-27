@@ -1,0 +1,9 @@
+inherit: [ l4re ]
+
+buildScript: |
+    cp $<<hello/hello.cfg>> hello.cfg
+    cp $<<hello/modules.list>> modules.list
+    l4reBuildImages
+
+packageScript: |
+    l4reInstallImages

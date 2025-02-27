@@ -1,0 +1,8 @@
+modaddr 0x01100000
+entry hello
+kernel fiasco -serial_esc
+roottask moe rom/hello.cfg
+module l4re
+module ned
+module hello
+module hello.cfg

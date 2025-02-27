@@ -1,0 +1,246 @@
+inherit: [ "basement::rootrecipe" ]
+
+multiPackage:
+    amd64:
+        environment:
+            FIASCO_DEFCONFIG: amd64-dfl
+            L4RE_DEFCONFIG: amd64
+            L4RE_LAUNCH_EFI: |
+                for i in /usr/share/OVMF/OVMF_CODE.fd \\
+                         /usr/share/ovmf/OVMF.fd \\
+                         /usr/share/edk2/x64/OVMF.4m.fd \\
+                         /usr/share/edk2-ovmf/OVMF_CODE.fd
+                do
+                    if [ -r \"\$i\" ] ; then
+                        FIRMWARE=\"\$i\"
+                        break
+                    fi
+                done
+
+                if [ -z \${FIRMWARE+set} ] ; then
+                    echo \"No UEFI firmware found for Qemu!\" >&2
+                    echo \"Please install the OVMF (Open Virtual Machine Firmware) package for your distribution.\" >&2
+                    echo \"The package is called 'ovmf' (Debian), 'edk2-ovmf' (Arch, Fedora) or 'sys-firmware/edk2-bin' (Gentoo).\" >&2
+                    exit 1
+                fi
+
+                exec qemu-system-x86_64 -M q35 -cpu host -enable-kvm -m 2048 \\
+                  -bios \"\$FIRMWARE\" \\
+                  -serial stdio -nographic -monitor none -cdrom \"IMAGE\"
+        depends:
+            - name: devel::cross-toolchain-x86_64-linux-gnu
+              use: [environment, tools]
+              forward: True
+
+            - examples::hello
+            - examples::ipcbench
+            - examples::linux-vm-single
+            - examples::linux-vm-multi
+
+    arm:
+        depends:
+            - name: devel::cross-toolchain-arm-linux-gnueabihf
+              use: [environment, tools]
+              forward: True
+
+            - examples::hello
+            - examples::ipcbench
+            - examples::linux-vm-single
+            - examples::linux-vm-multi
+
+        multiPackage:
+            qemu_virt:
+                environment:
+                    FIASCO_DEFCONFIG: arm-virt-pl2
+                    L4RE_KCONFIG: |
+                        CONFIG_BUILD_ARCH_arm=y
+                    L4RE_LAUNCH_ELF: >-
+                        exec qemu-system-arm -M virt,virtualization=true
+                        -cpu cortex-a15 -smp 4 -m 1024 -serial stdio -nographic
+                        -monitor none -kernel \"IMAGE\"
+
+    arm64:
+        depends:
+            - name: devel::cross-toolchain-aarch64-linux-gnu
+              use: [environment, tools]
+              forward: True
+
+            - examples::hello
+            - examples::ipcbench
+            - examples::linux-vm-single
+            - examples::linux-vm-multi
+
+        multiPackage:
+            qemu_virt:
+                environment:
+                    FIASCO_KCONFIG: |
+                        CONFIG_ARM=y
+                        CONFIG_ARM_CORTEX_A57=y
+                        # CONFIG_ARM_GIC_MSI is not set
+                        CONFIG_PERFORMANCE=y
+                    L4RE_DEFCONFIG: arm64-virt-v8a
+                    L4RE_LAUNCH_ELF: >-
+                        exec qemu-system-aarch64 -M virt,virtualization=true
+                        -cpu cortex-a57 -smp 4 -m 1024 -serial stdio -nographic
+                        -monitor none -kernel \"IMAGE\"
+
+            rcar3:
+                environment:
+                    FIASCO_DEFCONFIG: arm64-rcar3
+                    L4RE_KCONFIG: |
+                        CONFIG_BUILD_ARCH_arm64=y
+                        CONFIG_PLATFORM_TYPE_rcar3=y
+
+            rpi4:
+                environment:
+                    FIASCO_DEFCONFIG: arm64-rpi4
+                    L4RE_KCONFIG: |
+                        CONFIG_BUILD_ARCH_arm64=y
+                        CONFIG_PLATFORM_TYPE_rpi=y
+
+            s32g:
+                environment:
+                    FIASCO_DEFCONFIG: arm64-s32g
+                    L4RE_KCONFIG: |
+                        CONFIG_BUILD_ARCH_arm64=y
+                        CONFIG_PLATFORM_TYPE_s32g=y
+
+            sbsa:
+                environment:
+                    FIASCO_KCONFIG: |
+                        CONFIG_ARM=y
+                        CONFIG_PF_SBSA=y
+                        CONFIG_ARM_NEOVERSE_N1=y
+                        CONFIG_ARM_PT48=y
+                        CONFIG_MP_MAX_CPUS=128
+                        CONFIG_KERNEL_NX=y
+                        CONFIG_PERFORMANCE=y
+                    L4RE_KCONFIG: |
+                        CONFIG_BUILD_ARCH_arm64=y
+                        CONFIG_PLATFORM_TYPE_arm_sbsa=y
+                    #L4RE_LAUNCH_EFI: >-
+                    #    qemu-system-x86_64 -M sbsa-ref
+                    #    -drive file=SBSA_FLASH0.fd,format=raw,if=pflash
+                    #    -drive file=SBSA_FLASH1.fd,format=raw,if=pflash
+                    #    -serial stdio -nographic -monitor none -cdrom \"IMAGE\"
+
+#############################################################################
+#
+# The examples below are for no-MMU platforms. For them, L4Re is configured
+# quite differently.
+#
+#############################################################################
+
+    arm-fvp_base_r:
+        environment:
+            FIASCO_KCONFIG: |
+                CONFIG_ARM=y
+                CONFIG_PF_FVP_BASE_R=y
+                CONFIG_PHYS_OBJ_SPACE_AVL=y
+                CONFIG_DISABLE_MAPDB=y
+                CONFIG_PERFORMANCE=y
+                CONFIG_OPTIMIZE_FOR_SIZE=y
+                CONFIG_THUMB2=y
+                CONFIG_EXPERIMENTAL=y
+            L4RE_KCONFIG: |
+                CONFIG_BUILD_ARCH_arm=y
+                CONFIG_CPU_ARM_ARMV8R_AARCH32=y
+                CONFIG_PLATFORM_TYPE_arm_fvp_base_r=y
+                CONFIG_BID_OPTIMIZE_SIZE=y
+                CONFIG_BID_PIE_ALL=y
+                # CONFIG_BID_BUILD_TESTS is not set
+                # CONFIG_BID_GCC_OMIT_FP is not set
+                CONFIG_EXPERIMENTAL=y
+                CONFIG_BID_THUMB=y
+                CONFIG_BID_STATIC_HEAP=y
+                CONFIG_BID_STATIC_STACK=y
+                CONFIG_TINIT_VERBOSITY_ALL=y
+                CONFIG_TINIT_RUN_SIGMA0=y
+                CONFIG_TINIT_HEAP_SIZE=1024
+                CONFIG_TINIT_DYNAMIC_LOADER=y
+                CONFIG_TVMM_VERBOSITY_ALL=y
+                CONFIG_TVMM_GIC_VIRTUAL_SPIS=64
+                CONFIG_TVMM_MAX_VMS=2
+                # CONFIG_UVMM_VDEV_DEVICE_PCI_HOST_ECAM_GENERIC is not set
+            L4RE_TARGETS: >-
+                pkg/l4re-core pkg/hello pkg/tinit pkg/tvmm pkg/bootstrap
+            L4RE_LAUNCH_ELF: |
+                exec FVP_BaseR_AEMv8R \\
+                  -C bp.exclusive_monitor.monitor_access_level=1 \\
+                  -C bp.pl011_uart0.out_file=- \\
+                  -C bp.refcounter.non_arch_start_at_default=1 \\
+                  -C bp.vis.disable_visualisation=1 \\
+                  -C cache_state_modelled=0 \\
+                  -C cluster0.NUM_CORES=1 \\
+                  -C cluster0.VMSA_supported=0 \\
+                  -C cluster0.has_aarch64=0 \\
+                  -C gic_distributor.GICD_CTLR-DS-1-means-secure-only=1 \\
+                  -C gic_distributor.has-two-security-states=0 \\
+                  -a \'cluster0*\'=\"IMAGE\" \"\$@\"
+
+        depends:
+            - name: devel::cross-toolchain-arm-linux-gnueabihf
+              use: [environment, tools]
+              forward: True
+
+            - examples::hello
+            - examples::freertos-tvmm
+
+    arm64-fvp_base_r:
+        environment:
+            FIASCO_KCONFIG: |
+                CONFIG_ARM=y
+                CONFIG_PF_FVP_BASE_R=y
+                CONFIG_ARM_CORTEX_R82=y
+                CONFIG_MP=y
+                CONFIG_PERFORMANCE=y
+            L4RE_KCONFIG: |
+                CONFIG_BUILD_ARCH_arm64=y
+                CONFIG_CPU_ARM_ARMV8R_AARCH64=y
+                CONFIG_PLATFORM_TYPE_arm_fvp_base_r=y
+                CONFIG_BID_PIE_ALL=y
+                # CONFIG_BID_BUILD_TESTS is not set
+                # CONFIG_BID_GCC_OMIT_FP is not set
+                CONFIG_BID_GENERATE_MAPFILE=y
+                CONFIG_EXPERIMENTAL=y
+                # CONFIG_UVMM_VDEV_DEVICE_PCI_HOST_ECAM_GENERIC is not set
+            L4RE_LAUNCH_ELF: |
+                exec FVP_BaseR_AEMv8R \\
+                  -C bp.exclusive_monitor.monitor_access_level=1 \\
+                  -C bp.pl011_uart0.out_file=- \\
+                  -C bp.pl011_uart0.unbuffered_output=0 \\
+                  -C bp.refcounter.non_arch_start_at_default=1 \\
+                  -C bp.vis.disable_visualisation=1 \\
+                  -C cache_state_modelled=0 \\
+                  -C cci400.force_on_from_start=1 \\
+                  -C cluster0.NUM_CORES=4 \\
+                  -C cluster0.VMSA_supported=1 \\
+                  -C cluster0.has_aarch64=1 \\
+                  -C gic_distributor.GICD_CTLR-DS-1-means-secure-only=1 \\
+                  -C gic_distributor.has-two-security-states=0 \\
+                  -C bp.smsc_91c111.enabled=1 \\
+                  -C bp.smsc_91c111.mac_address=auto \\
+                  -C bp.hostbridge.userNetworking=1 \\
+                  -a \'cluster0*\'=\"IMAGE\" \"\$@\"
+
+        depends:
+            - name: devel::cross-toolchain-aarch64-linux-gnu
+              use: [environment, tools]
+              forward: True
+
+            - examples::hello
+            - examples::ipcbench
+            - examples::linux-vm-single
+            - examples::linux-vm-multi
+            - examples::linux+zephyr-vm
+
+# Gather all examples...
+buildScript: |
+    for i in "${!BOB_DEP_PATHS[@]}" ; do
+        if [[ $i == examples::* ]] ; then
+            rsync -a "${BOB_DEP_PATHS[$i]}/" "./$i/"
+        fi
+    done
+
+packageScript: |
+    rsync -a "$1/" .

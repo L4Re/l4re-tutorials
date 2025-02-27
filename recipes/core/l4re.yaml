@@ -1,0 +1,177 @@
+inherit: [ make ]
+
+depends:
+    - tools:
+        target-toolchain: host-compat-toolchain
+      depends:
+        - name: devel::dtc
+          use: [tools]
+        - name: utils::uboot-tools
+          use: [tools]
+
+checkoutSCM:
+  - scm: git
+    url: https://github.com/kernkonzept/mk.git
+    dir: .
+  - scm: git
+    url: https://github.com/kernkonzept/acpica.git
+    dir: pkg/acpica
+  - scm: git
+    url: https://github.com/kernkonzept/ahci-driver.git
+    dir: pkg/ahci-driver
+  - scm: git
+    url: https://github.com/kernkonzept/bootstrap.git
+    dir: pkg/bootstrap
+  - scm: git
+    url: https://github.com/kernkonzept/cons.git
+    dir: pkg/cons
+  - scm: git
+    url: https://github.com/kernkonzept/drivers-frst.git
+    dir: pkg/drivers-frst
+  - scm: git
+    url: https://github.com/kernkonzept/gnu-efi.git
+    dir: pkg/gnu-efi
+  - scm: git
+    url: https://github.com/kernkonzept/hello.git
+    dir: pkg/hello
+  - scm: git
+    url: https://github.com/kernkonzept/io.git
+    dir: pkg/io
+  - scm: git
+    url: https://github.com/l4re/ipcbench.git
+    dir: pkg/ipcbench
+    branch: main
+  - scm: git
+    url: https://github.com/kernkonzept/l4_virtio-net-switch.git
+    dir: pkg/virtio-net-switch
+  - scm: git
+    url: https://github.com/kernkonzept/l4re-core.git
+    dir: pkg/l4re-core
+  - scm: git
+    url: https://github.com/kernkonzept/l4virtio.git
+    dir: pkg/l4virtio
+  - scm: git
+    url: https://github.com/kernkonzept/libblock-device.git
+    dir: pkg/libblock-device
+  - scm: git
+    url: https://github.com/kernkonzept/libfdt.git
+    dir: pkg/libfdt
+  - scm: git
+    url: https://github.com/kernkonzept/libvcpu.git
+    dir: pkg/libvcpu
+  - scm: git
+    url: https://github.com/kernkonzept/nvme-driver.git
+    dir: pkg/nvme-driver
+  - scm: git
+    url: https://github.com/kernkonzept/rtc.git
+    dir: pkg/rtc
+  - scm: git
+    url: https://github.com/kernkonzept/tinit.git
+    dir: pkg/tinit
+  - scm: git
+    url: https://github.com/kernkonzept/tvmm.git
+    dir: pkg/tvmm
+  - scm: git
+    url: https://github.com/kernkonzept/uvmm.git
+    dir: pkg/uvmm
+  - scm: git
+    url: https://github.com/kernkonzept/zlib.git
+    dir: pkg/zlib
+
+buildTools: [host-toolchain, target-toolchain, flex, bison]
+buildToolsWeak: [dtc, uboot-tools]
+buildVars: [ARCH, CROSS_COMPILE, L4RE_DEFCONFIG, L4RE_KCONFIG, L4RE_TARGETS,
+            L4RE_MAKECONF]
+buildScript: |
+  if [[ ! -e build/.bob-init-done ]] ; then
+    rm -rf build
+    if [[ -n ${L4RE_KCONFIG+true} ]] ; then
+      if [[ -n ${L4RE_DEFCONFIG+true} ]] ; then
+        cp "$1/mk/defconfig/config.$L4RE_DEFCONFIG" defconfig
+      else
+        rm -f defconfig
+      fi
+      printf "$L4RE_KCONFIG" >> defconfig
+      make -C "$1" B="$PWD/build" DROPSCONF_DEFCONFIG="$PWD/defconfig"
+      make -C build olddefconfig
+      touch build/.bob-init-done
+    elif [[ -n ${L4RE_DEFCONFIG+true} ]] ; then
+      make -C "$1" B="$PWD/build" DROPSCONF_DEFCONFIG="$1/mk/defconfig/config.$L4RE_DEFCONFIG"
+    else
+      echo "Error: neither L4RE_DEFCONFIG nor L4RE_KCONFIG set!" >&2
+      exit 1
+    fi
+  fi
+
+  if [[ -n ${L4RE_MAKECONF+true} && ! -e build/conf/Makeconf.local ]] ; then
+    mkdir -p build/conf
+    printf "$L4RE_MAKECONF" >> build/conf/Makeconf.local
+  fi
+
+  cat >modules.list <<EOF
+  entry[no-defaults] dummy
+  bootstrap bootstrap -modaddr 0x01100000
+  EOF
+
+  mkdir -p images
+  case $ARCH in
+    arm)
+      IMAGES=( elf raw uimage )
+      ;;
+    arm64)
+      if grep -q sbsa build/.config.platform ; then
+        IMAGES=( efi )
+        EFI_NAME=bootaa64.efi
+      else
+        IMAGES=( elf raw uimage )
+      fi
+      ;;
+    x86_64)
+      IMAGES=( elf32 efi )
+      EFI_NAME=bootx64.efi
+      ;;
+  esac
+
+  pushd build
+  make check_and_adjust_ram_base
+  makeParallel ${L4RE_TARGETS:-}
+  for i in "${IMAGES[@]}" ; do
+    case $i in
+      efi)
+        make efiimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
+        IMG_NAME="$EFI_NAME"
+        ;;
+      elf*)
+        make elfimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
+        IMG_NAME="bootstrap.$i"
+        ;;
+      raw)
+        make rawimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
+        IMG_NAME="bootstrap.raw"
+        ;;
+      uimage)
+        make uimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
+        IMG_NAME="bootstrap.uimage"
+        ;;
+    esac
+    cp images/bootstrap_dummy.$i ../images/$IMG_NAME
+  done
+  popd
+
+packageScript: |
+  rsync -a --copy-unsafe-links \
+    --include="/assets/***" \
+    --include=/bin/ \
+    --exclude=/bin/host/ \
+    --include="/bin/*/" \
+    --include="/bin/*/l4f/***" \
+    --include=/lib/ \
+    --exclude=/lib/host/ \
+    --include="/lib/*/" \
+    --include="/lib/*/std/" \
+    --include="/lib/*/std/l4f/" \
+    --include="/lib/*/std/l4f/*.so" \
+    --include="/lib/*/std/l4f/.debug/***" \
+    --exclude="*" \
+    "$1/build/" .
+  cp -a "$1/images/" .

@@ -1,0 +1,100 @@
+depends:
+    - kernel::fiasco
+    - core::l4re
+    - tools:
+        target-toolchain: host-compat-toolchain
+      use: [tools]
+      depends:
+        - devel::l4image
+        - utils::mtools
+
+buildToolsWeak: [l4image, mtools]
+buildVars: [L4RE_LAUNCH_ELF, L4RE_LAUNCH_EFI]
+buildSetup: |
+    function join_space { local IFS=" "; echo "$*"; }
+
+    # usage: l4reBuildImages [-m <modules.list path>]
+    #                        [<search path>]*
+    # -m: defaults to "modules.list"
+    l4reBuildImages()
+    {
+        local MODULES_LIST=modules.list
+        local -a SP=(
+          .
+          "${BOB_DEP_PATHS[kernel::fiasco]}"
+          "${BOB_DEP_PATHS[core::l4re]}"/assets
+          "${BOB_DEP_PATHS[core::l4re]}"/bin/*/l4f
+          "${BOB_DEP_PATHS[core::l4re]}"/lib/*/std/l4f
+        )
+
+        OPTIND=1
+        local opt
+        while getopts "m:" opt ; do
+            case "$opt" in
+                m)
+                    MODULES_LIST="$OPTARG"
+                    ;;
+                \?)
+                    echo "Invalid option: -$OPTARG" >&2
+                    return 1
+                    ;;
+            esac
+        done
+        shift $(( OPTIND -1 ))
+
+        SP+=( "$@" )
+
+        # Call l4image for all available images
+        rm -rf install
+        mkdir install
+        for i in "${BOB_DEP_PATHS[core::l4re]}"/images/* ; do
+          fn="${i##*/}"
+          cp "$i" install/
+          l4image -i install/$fn create \
+            --search-path "$(join_space "${SP[@]}")" \
+            --modules-list-file "$MODULES_LIST"
+
+          case "$i" in
+            *.elf)
+              LAUNCH_CMD="${L4RE_LAUNCH_ELF-}"
+              IMAGE="$fn"
+              ;;
+            *.efi)
+              LAUNCH_CMD="${L4RE_LAUNCH_EFI-}"
+              IMAGE="${fn}.img"
+              ;;
+            *)
+              unset LAUNCH_CMD
+              ;;
+          esac
+
+          if [[ -n "${LAUNCH_CMD-}" ]] ; then
+    cat >"install/${fn}.launch" <<EOF
+    #!/bin/sh
+    D="\${0%/*}"
+    ${LAUNCH_CMD}
+    EOF
+            sed -i -e "s|IMAGE|\$D/$IMAGE|" "install/${fn}.launch"
+            chmod a+x "install/${fn}.launch"
+          fi
+        done
+
+        # Create an bootable EFI partition for EFI payloads
+        shopt -s nullglob
+        for i in install/*.efi ; do
+            SIZE="$(du -k "$i" | cut -f 1)"
+            fallocate -l "$(( SIZE * 12 / 10 ))k" "$i.img"
+            mformat -i "$i.img"
+            mmd -i "$i.img" ::/EFI ::/EFI/BOOT
+            mcopy -i "$i.img" $i ::/EFI/BOOT
+        done
+        shopt -u nullglob
+    }
+
+packageSetup: |
+    _L4RE_BUILD_PATH="$1"
+
+    l4reInstallImages()
+    {
+        cp ${1:-${_L4RE_BUILD_PATH}}/install/* .
+    }

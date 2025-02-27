@@ -1,0 +1,66 @@
+# This example configuration only works for AArch64 Armv8-R.
+
+inherit: [ l4re ]
+
+depends:
+    - name: devel::dtc
+      use: [tools]
+      forward: True
+      tools:
+        target-toolchain: host-compat-toolchain
+
+    # Zephyr selects its own bare-metal toolchain
+    - kernel::zephyr
+
+    - name: kernel::linux-image
+      use: [result, environment]
+      environment:
+        LINUX_CUSTOM_CONFIG: "arm64.defconfig"
+        LINUX_CUSTOM_CONFIG_PKG: "examples::guests::linux-cfg"
+    - examples::guests::linux-initramfs
+
+checkoutSCM:
+  scm: import
+  url: recipes/examples/linux+zephyr-vm/dts
+
+buildTools: [dtc]
+buildVars: [LINUX_VERSION]
+buildScript: |
+    cp $<<linux+zephyr-vm/ned.lua>> ned.lua
+    cp $<<linux+zephyr-vm/io.lua>> io.lua
+
+    for i in "$1"/*.dts ; do
+        dst="${i##*/}"
+        dst="${dst%.dts}"
+        dtc $i > ${dst}.dtb
+    done
+
+    cat >modules.list <<EOF
+    modaddr 0x0c000000
+    entry linux+zephyr-vm
+    kernel fiasco -serial_esc
+    sigma0[attr:reloc=1] sigma0
+    roottask[attr:reloc=1] moe --brk=c000000 rom/ned.lua
+    module l4re
+    module ned
+    module ned.lua
+    module zephyr.elf
+    module virt-arm_r82-zephyr.dtb
+    module rtc
+    module uvmm
+    module cons
+    module io
+    module io.lua
+    module virt-arm_r82-linux.dtb
+    module[nostrip,fname=vmlinux] vmlinux-$LINUX_VERSION
+    module initramfs.cpio.gz
+    EOF
+
+    l4reBuildImages \
+        ${BOB_DEP_PATHS[kernel::zephyr]} \
+        ${BOB_DEP_PATHS[kernel::linux-image]}/boot \
+        ${BOB_DEP_PATHS[examples::guests::linux-initramfs]}
+
+packageScript: |
+    l4reInstallImages
+
