@@ -1,4 +1,4 @@
-inherit: [ l4re ]
+inherit: [ l4re-dist ]
 
 depends:
     - name: kernel::linux-image

@@ -1,6 +1,6 @@
 # This example configuration only works for AArch64 Armv8-R.
 
-inherit: [ l4re ]
+inherit: [ l4re-dist ]
 
 depends:
     - name: devel::dtc

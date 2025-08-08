@@ -1,4 +1,4 @@
-inherit: [ l4re ]
+inherit: [ l4re-dist ]
 
 environment:
     # Force performance configuration and enable user space access to
