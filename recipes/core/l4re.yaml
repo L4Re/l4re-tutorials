@@ -92,11 +92,11 @@ buildScript: |
         rm -f defconfig
       fi
       printf "$L4RE_KCONFIG" >> defconfig
-      make -C "$1" B="$PWD/build" DROPSCONF_DEFCONFIG="$PWD/defconfig"
+      make -C "$1" B="$PWD/build" DEFCONFIG="$PWD/defconfig"
       make -C build olddefconfig
       touch build/.bob-init-done
     elif [[ -n ${L4RE_DEFCONFIG+true} ]] ; then
-      make -C "$1" B="$PWD/build" DROPSCONF_DEFCONFIG="$1/mk/defconfig/config.$L4RE_DEFCONFIG"
+      make -C "$1" B="$PWD/build" DEFCONFIG="$1/mk/defconfig/config.$L4RE_DEFCONFIG"
     else
       echo "Error: neither L4RE_DEFCONFIG nor L4RE_KCONFIG set!" >&2
       exit 1
