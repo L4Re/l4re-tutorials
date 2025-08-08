@@ -115,9 +115,6 @@ buildScript: |
 
   mkdir -p images
   case $ARCH in
-    arm)
-      IMAGES=( elf raw uimage )
-      ;;
     arm64)
       if grep -q sbsa build/.config.platform ; then
         IMAGES=( efi )
@@ -129,6 +126,9 @@ buildScript: |
     x86_64)
       IMAGES=( elf efi )
       EFI_NAME=bootx64.efi
+      ;;
+    *)
+      IMAGES=( elf raw uimage )
       ;;
   esac
 

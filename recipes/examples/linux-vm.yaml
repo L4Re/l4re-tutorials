@@ -21,6 +21,10 @@ buildScript: |
             DTB=virt-arm_virt-64.dtb
             KERNEL=Image.gz
             ;;
+        riscv)
+            DTB=virt-riscv64.dtb
+            KERNEL=Image.gz
+            ;;
         x86_64)
             DTB=virt-pc.dtb
             KERNEL=bzImage

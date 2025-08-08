@@ -128,6 +128,27 @@ multiPackage:
                     #    -drive file=SBSA_FLASH1.fd,format=raw,if=pflash
                     #    -serial stdio -nographic -monitor none -cdrom \"IMAGE\"
 
+    riscv64:
+        depends:
+            - name: devel::cross-toolchain-riscv64-linux-gnu
+              use: [environment, tools]
+              forward: True
+
+            - examples::hello
+            - examples::ipcbench
+            - examples::linux-vm-single
+            - examples::linux-vm-multi
+
+        multiPackage:
+            qemu_virt:
+                environment:
+                    FIASCO_DEFCONFIG: riscv64-virt
+                    L4RE_DEFCONFIG: riscv64-virt
+                    L4RE_LAUNCH_ELF: >-
+                        exec qemu-system-riscv64 -M virt -bios default
+                        -smp 4 -m 1024 -serial stdio -nographic
+                        -monitor none -kernel \"IMAGE\"
+
 #############################################################################
 #
 # The examples below are for no-MMU platforms. For them, L4Re is configured
