@@ -1,4 +1,6 @@
-inherit: [ python3-pkg ]
+inherit: [ "python3::pip", "python3::cext" ]
+
+
 
 buildNetAccess: True
 buildScript: |
@@ -18,9 +20,9 @@ buildScript: |
         pylink-square==1.0.0 \
         python-can==4.1.0 \
         python-dateutil==2.8.2 \
-        PyYAML==6.0 \
-        ruamel.yaml==0.17.21 \
-        ruamel.yaml.clib==0.2.7 \
+        PyYAML==6.0.2 \
+        ruamel.yaml==0.18.13 \
+        ruamel.yaml.clib==0.2.12 \
         six==1.16.0 \
         typing-extensions==4.5.0 \
         west==1.0.0 \

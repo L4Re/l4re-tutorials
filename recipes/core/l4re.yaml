@@ -6,7 +6,7 @@ depends:
       depends:
         - name: devel::dtc
           use: [tools]
-        - name: utils::uboot-tools
+        - name: bsp::uboot-tools
           use: [tools]
 
 checkoutSCM:
@@ -92,15 +92,15 @@ buildScript: |
         rm -f defconfig
       fi
       printf "$L4RE_KCONFIG" >> defconfig
-      make -C "$1" B="$PWD/build" DROPSCONF_DEFCONFIG="$PWD/defconfig"
+      make -C "$1" B="$PWD/build" DEFCONFIG="$PWD/defconfig"
       make -C build olddefconfig
-      touch build/.bob-init-done
     elif [[ -n ${L4RE_DEFCONFIG+true} ]] ; then
-      make -C "$1" B="$PWD/build" DROPSCONF_DEFCONFIG="$1/mk/defconfig/config.$L4RE_DEFCONFIG"
+      make -C "$1" B="$PWD/build" DEFCONFIG="$1/mk/defconfig/config.$L4RE_DEFCONFIG"
     else
       echo "Error: neither L4RE_DEFCONFIG nor L4RE_KCONFIG set!" >&2
       exit 1
     fi
+    touch build/.bob-init-done
   fi
 
   if [[ -n ${L4RE_MAKECONF+true} && ! -e build/conf/Makeconf.local ]] ; then
@@ -115,9 +115,6 @@ buildScript: |
 
   mkdir -p images
   case $ARCH in
-    arm)
-      IMAGES=( elf raw uimage )
-      ;;
     arm64)
       if grep -q sbsa build/.config.platform ; then
         IMAGES=( efi )
@@ -127,8 +124,11 @@ buildScript: |
       fi
       ;;
     x86_64)
-      IMAGES=( elf32 efi )
+      IMAGES=( elf efi )
       EFI_NAME=bootx64.efi
+      ;;
+    *)
+      IMAGES=( elf raw uimage )
       ;;
   esac
 
@@ -138,12 +138,14 @@ buildScript: |
   for i in "${IMAGES[@]}" ; do
     case $i in
       efi)
+        # Workaround for broken bootstrap EFI incremental build...
+        rm -f bin/*/plain/bootstrap.efi
         make efiimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
         IMG_NAME="$EFI_NAME"
         ;;
-      elf*)
+      elf)
         make elfimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
-        IMG_NAME="bootstrap.$i"
+        IMG_NAME="bootstrap.elf"
         ;;
       raw)
         make rawimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"

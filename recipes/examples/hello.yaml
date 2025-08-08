@@ -1,4 +1,4 @@
-inherit: [ l4re ]
+inherit: [ l4re-dist ]
 
 buildScript: |
     cp $<<hello/hello.cfg>> hello.cfg
