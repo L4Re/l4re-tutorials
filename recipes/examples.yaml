@@ -25,8 +25,12 @@ multiPackage:
                 fi
 
                 exec qemu-system-x86_64 -M q35 -cpu host -enable-kvm -m 2048 \\
-                  -bios \"\$FIRMWARE\" \\
+                  -smp 4 -bios \"\$FIRMWARE\" \\
                   -serial stdio -nographic -monitor none -cdrom \"IMAGE\"
+            L4RE_LAUNCH_ELF: >-
+                exec qemu-system-x86_64 -M q35 -cpu host -enable-kvm -m 2048
+                -smp 4 -serial stdio -nographic -monitor none -kernel \"IMAGE\"
+
         depends:
             - name: devel::cross-toolchain-x86_64-linux-gnu
               use: [environment, tools]
