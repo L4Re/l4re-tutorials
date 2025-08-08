@@ -127,7 +127,7 @@ buildScript: |
       fi
       ;;
     x86_64)
-      IMAGES=( elf32 efi )
+      IMAGES=( elf efi )
       EFI_NAME=bootx64.efi
       ;;
   esac
@@ -141,9 +141,9 @@ buildScript: |
         make efiimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
         IMG_NAME="$EFI_NAME"
         ;;
-      elf*)
+      elf)
         make elfimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
-        IMG_NAME="bootstrap.$i"
+        IMG_NAME="bootstrap.elf"
         ;;
       raw)
         make rawimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
