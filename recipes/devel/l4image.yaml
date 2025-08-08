@@ -1,7 +1,7 @@
 checkoutSCM:
     - scm: git
       url: https://github.com/kernkonzept/mk.git
-      commit: ee00632645fc35b933258e9075fdbc095b0e6fb6
+      tag: r-2025-W31
       shallow: "2024-11-19"
 
 buildScript: |
