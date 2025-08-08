@@ -138,6 +138,8 @@ buildScript: |
   for i in "${IMAGES[@]}" ; do
     case $i in
       efi)
+        # Workaround for broken bootstrap EFI incremental build...
+        rm -f bin/*/plain/bootstrap.efi
         make efiimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
         IMG_NAME="$EFI_NAME"
         ;;
