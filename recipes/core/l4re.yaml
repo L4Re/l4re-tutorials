@@ -6,7 +6,7 @@ depends:
       depends:
         - name: devel::dtc
           use: [tools]
-        - name: utils::uboot-tools
+        - name: bsp::uboot-tools
           use: [tools]
 
 checkoutSCM:

@@ -1,4 +1,4 @@
-inherit: [ninja, patch, python3-usr]
+inherit: [ninja, patch, python3]
 
 depends:
   - tools:

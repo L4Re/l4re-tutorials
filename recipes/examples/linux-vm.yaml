@@ -2,7 +2,6 @@ inherit: [ l4re-dist ]
 
 depends:
     - name: kernel::linux-image
-      use: [result, environment]
       environment:
           LINUX_CUSTOM_CONFIG: "$(get-tool-env,target-toolchain,ARCH).defconfig"
           LINUX_CUSTOM_CONFIG_PKG: "examples::guests::linux-cfg"
@@ -11,17 +10,20 @@ depends:
 privateEnvironment:
     TARGET_ARCH: "$(get-tool-env,target-toolchain,ARCH)"
 
-buildVars: [TARGET_ARCH, LINUX_VERSION]
+buildVars: [TARGET_ARCH]
 buildScript: |
     case $TARGET_ARCH in
         arm)
             DTB=virt-arm_virt-32.dtb
+            KERNEL=zImage
             ;;
         arm64)
             DTB=virt-arm_virt-64.dtb
+            KERNEL=Image.gz
             ;;
         x86_64)
             DTB=virt-pc.dtb
+            KERNEL=bzImage
             ;;
         *)
             echo "Example not yet adapted for architecture ${ARCH}!" >&2
@@ -43,12 +45,12 @@ multiPackage:
             module ned
             module uvmm
             module[fname=virt.dtb]        dtb/$DTB
-            module[fname=linux,nostrip]   vmlinux-$LINUX_VERSION
+            module[fname=linux,nostrip]   $KERNEL
             module[fname=ramdisk.cpio.gz] initramfs.cpio.gz
             EOF
 
             l4reBuildImages \
-                ${BOB_DEP_PATHS[kernel::linux-image]}/boot \
+                ${BOB_DEP_PATHS[kernel::linux-image]} \
                 ${BOB_DEP_PATHS[examples::guests::linux-initramfs]}
 
     multi:
@@ -65,12 +67,12 @@ multiPackage:
             module uvmm
             module l4vio_switch
             module[fname=virt.dtb]        dtb/$DTB
-            module[fname=linux,nostrip]   vmlinux-$LINUX_VERSION
+            module[fname=linux,nostrip]   $KERNEL
             module[fname=ramdisk.cpio.gz] initramfs.cpio.gz
             EOF
 
             l4reBuildImages \
-                ${BOB_DEP_PATHS[kernel::linux-image]}/boot \
+                ${BOB_DEP_PATHS[kernel::linux-image]} \
                 ${BOB_DEP_PATHS[examples::guests::linux-initramfs]}
 
 packageScript: |

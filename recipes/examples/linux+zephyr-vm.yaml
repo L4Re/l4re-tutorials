@@ -13,7 +13,6 @@ depends:
     - kernel::zephyr
 
     - name: kernel::linux-image
-      use: [result, environment]
       environment:
         LINUX_CUSTOM_CONFIG: "arm64.defconfig"
         LINUX_CUSTOM_CONFIG_PKG: "examples::guests::linux-cfg"
@@ -24,7 +23,6 @@ checkoutSCM:
   url: recipes/examples/linux+zephyr-vm/dts
 
 buildTools: [dtc]
-buildVars: [LINUX_VERSION]
 buildScript: |
     cp $<<linux+zephyr-vm/ned.lua>> ned.lua
     cp $<<linux+zephyr-vm/io.lua>> io.lua
@@ -52,13 +50,13 @@ buildScript: |
     module io
     module io.lua
     module virt-arm_r82-linux.dtb
-    module[nostrip,fname=vmlinux] vmlinux-$LINUX_VERSION
+    module[nostrip,fname=vmlinux] Image.gz
     module initramfs.cpio.gz
     EOF
 
     l4reBuildImages \
         ${BOB_DEP_PATHS[kernel::zephyr]} \
-        ${BOB_DEP_PATHS[kernel::linux-image]}/boot \
+        ${BOB_DEP_PATHS[kernel::linux-image]} \
         ${BOB_DEP_PATHS[examples::guests::linux-initramfs]}
 
 packageScript: |

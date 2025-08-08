@@ -25,10 +25,10 @@ CPPFLAGS := $(addprefix -I,$(INCLUDES)) -MMD -MP
 
 CFLAGS = -Wall -Wextra \
          -marm -mno-thumb-interwork -mabi=aapcs-linux \
-         -march=armv8-r -fno-builtin -ffreestanding \
+         -march=armv8-r+fp.sp -fno-builtin -ffreestanding \
          -fomit-frame-pointer -fno-strict-aliasing -Og -g
 
-ASFLAGS = -march=armv8-r -g
+ASFLAGS = -march=armv8-r+fp.sp -g
 
 LINKER_FLAGS = -Map=$@.map -Bstatic --no-dynamic-linker --gc-sections
 
