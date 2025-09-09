@@ -189,6 +189,7 @@ multiPackage:
                 # CONFIG_UVMM_VDEV_DEVICE_PCI_HOST_ECAM_GENERIC is not set
             L4RE_TARGETS: >-
                 pkg/l4re-core pkg/hello pkg/tinit pkg/tvmm pkg/bootstrap
+                pkg/ipcbench
             L4RE_LAUNCH_ELF: |
                 exec FVP_BaseR_AEMv8R \\
                   -C bp.exclusive_monitor.monitor_access_level=1 \\
@@ -210,6 +211,7 @@ multiPackage:
 
             - examples::hello
             - examples::freertos-tvmm
+            - examples::ipcbench
 
     arm64-fvp_base_r:
         environment:
