@@ -11,71 +11,92 @@ depends:
 
 checkoutSCM:
   - scm: git
-    url: https://github.com/kernkonzept/mk.git
+    url: https://github.com/l4re/mk.git
+    branch: main
     dir: .
   - scm: git
-    url: https://github.com/kernkonzept/acpica.git
+    url: https://github.com/l4re/acpica.git
+    branch: main
     dir: pkg/acpica
   - scm: git
-    url: https://github.com/kernkonzept/ahci-driver.git
+    url: https://github.com/l4re/ahci-driver.git
+    branch: main
     dir: pkg/ahci-driver
   - scm: git
-    url: https://github.com/kernkonzept/bootstrap.git
+    url: https://github.com/l4re/bootstrap.git
+    branch: main
     dir: pkg/bootstrap
   - scm: git
-    url: https://github.com/kernkonzept/cons.git
+    url: https://github.com/l4re/cons.git
+    branch: main
     dir: pkg/cons
   - scm: git
-    url: https://github.com/kernkonzept/drivers-frst.git
+    url: https://github.com/l4re/drivers-frst.git
+    branch: main
     dir: pkg/drivers-frst
   - scm: git
-    url: https://github.com/kernkonzept/gnu-efi.git
+    url: https://github.com/l4re/gnu-efi.git
+    branch: main
     dir: pkg/gnu-efi
   - scm: git
-    url: https://github.com/kernkonzept/hello.git
+    url: https://github.com/l4re/hello.git
+    branch: main
     dir: pkg/hello
   - scm: git
-    url: https://github.com/kernkonzept/io.git
+    url: https://github.com/l4re/io.git
+    branch: main
     dir: pkg/io
   - scm: git
     url: https://github.com/l4re/ipcbench.git
-    dir: pkg/ipcbench
     branch: main
+    dir: pkg/ipcbench
   - scm: git
-    url: https://github.com/kernkonzept/l4_virtio-net-switch.git
+    url: https://github.com/l4re/l4_virtio-net-switch.git
+    branch: main
     dir: pkg/virtio-net-switch
   - scm: git
-    url: https://github.com/kernkonzept/l4re-core.git
+    url: https://github.com/l4re/l4re-core.git
+    branch: main
     dir: pkg/l4re-core
   - scm: git
-    url: https://github.com/kernkonzept/l4virtio.git
+    url: https://github.com/l4re/l4virtio.git
+    branch: main
     dir: pkg/l4virtio
   - scm: git
-    url: https://github.com/kernkonzept/libblock-device.git
+    url: https://github.com/l4re/libblock-device.git
+    branch: main
     dir: pkg/libblock-device
   - scm: git
-    url: https://github.com/kernkonzept/libfdt.git
+    url: https://github.com/l4re/libfdt.git
+    branch: main
     dir: pkg/libfdt
   - scm: git
-    url: https://github.com/kernkonzept/libvcpu.git
+    url: https://github.com/l4re/libvcpu.git
+    branch: main
     dir: pkg/libvcpu
   - scm: git
-    url: https://github.com/kernkonzept/nvme-driver.git
+    url: https://github.com/l4re/nvme-driver.git
+    branch: main
     dir: pkg/nvme-driver
   - scm: git
-    url: https://github.com/kernkonzept/rtc.git
+    url: https://github.com/l4re/rtc.git
+    branch: main
     dir: pkg/rtc
   - scm: git
-    url: https://github.com/kernkonzept/tinit.git
+    url: https://github.com/l4re/tinit.git
+    branch: main
     dir: pkg/tinit
   - scm: git
-    url: https://github.com/kernkonzept/tvmm.git
+    url: https://github.com/l4re/tvmm.git
+    branch: main
     dir: pkg/tvmm
   - scm: git
-    url: https://github.com/kernkonzept/uvmm.git
+    url: https://github.com/l4re/uvmm.git
+    branch: main
     dir: pkg/uvmm
   - scm: git
-    url: https://github.com/kernkonzept/zlib.git
+    url: https://github.com/l4re/zlib.git
+    branch: main
     dir: pkg/zlib
 
 buildTools: [host-toolchain, target-toolchain, flex, bison]

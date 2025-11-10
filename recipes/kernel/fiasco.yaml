@@ -2,7 +2,8 @@ inherit: [make]
 
 checkoutSCM:
   - scm: git
-    url: https://github.com/kernkonzept/fiasco.git
+    url: https://github.com/l4re/fiasco.git
+    branch: main
 
 buildTools: [host-toolchain, target-toolchain, flex, bison]
 buildVars: [CC, CXX, LD, CROSS_COMPILE, FIASCO_DEFCONFIG, FIASCO_KCONFIG]
