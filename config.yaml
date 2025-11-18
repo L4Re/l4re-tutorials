@@ -3,8 +3,8 @@ layers:
   - name: basement
     scm: git
     url: https://github.com/BobBuildTool/basement.git
-    commit: d42250e42f8fa2e0de9281c8bf42e0ada2d108b3
+    commit: 0938c1795632763a1d4e9f3bdf7084243ae57d13
   - name: basement-gnu-linux
     scm: git
     url: https://github.com/BobBuildTool/basement-gnu-linux.git
-    commit: 3c1019f9cfc9e66c2ac2d8ad0af91958ccf46180
+    commit: 75cc9292eb584736c69bc746ccb40c14b0ce2f15
