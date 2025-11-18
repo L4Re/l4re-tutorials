@@ -161,6 +161,7 @@ multiPackage:
             FIASCO_KCONFIG: |
                 CONFIG_ARM=y
                 CONFIG_PF_FVP_BASE_R=y
+                # CONFIG_BIT64_CHOICE is not set
                 CONFIG_PHYS_OBJ_SPACE_AVL=y
                 CONFIG_DISABLE_MAPDB=y
                 CONFIG_PERFORMANCE=y
