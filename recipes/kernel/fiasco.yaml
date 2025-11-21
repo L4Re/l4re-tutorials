@@ -5,7 +5,7 @@ checkoutSCM:
     url: https://github.com/l4re/fiasco.git
     branch: main
 
-buildTools: [host-toolchain, target-toolchain, flex, bison]
+buildTools: [host-toolchain, target-toolchain, flex, bison, perl]
 buildVars: [CC, CXX, LD, CROSS_COMPILE, FIASCO_DEFCONFIG, FIASCO_KCONFIG]
 buildScript: |
   if [ ! -e build ] ; then

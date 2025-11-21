@@ -13,4 +13,6 @@ packageScript: |
     cp -r $1/* .
 
 provideTools:
-    l4image: bin
+    l4image:
+        path: bin
+        dependTools: [perl]
