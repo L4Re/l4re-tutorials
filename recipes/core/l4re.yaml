@@ -102,7 +102,7 @@ checkoutSCM:
 buildTools: [host-toolchain, target-toolchain, flex, bison, perl]
 buildToolsWeak: [dtc, uboot-tools]
 buildVars: [ARCH, CROSS_COMPILE, L4RE_DEFCONFIG, L4RE_KCONFIG, L4RE_TARGETS,
-            L4RE_MAKECONF]
+            L4RE_MAKECONF, QEMU_OPTIONS]
 buildScript: |
   if [[ ! -e build/.bob-init-done ]] ; then
     rm -rf build
