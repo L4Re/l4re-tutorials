@@ -52,12 +52,18 @@ it. Just execute it to run the demo:
     $ dev/dist/examples/hello/1/workspace/bootx64.efi.launch
 
 In this particular example, Qemu is supposed to be installed on your computer.
+
 Other demos require that the the Arm Fixed Virtual Platform emulator is
 available in `$PATH`. The FVP can be downloaded for free from the [Arm
 Architecture Models
 website](https://developer.arm.com/downloads/-/arm-ecosystem-models). Make sure
 to download the *Armv8-R AEM FVP* model. Just extract the archive somewhere and
 add the `models/Linux64_GCC-9.3` directory to your `$PATH`.
+
+We also recommend that the demos using the Arm Fixed Virtual Platform
+emulator are started within a `tmux`. When starting, this will open a new
+tmux window with an interactive session to the demo. Without tmux, just the
+output will be shown.
 
 # License
 

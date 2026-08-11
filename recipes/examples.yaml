@@ -192,9 +192,14 @@ multiPackage:
                 pkg/l4re-core pkg/hello pkg/tinit pkg/tvmm pkg/bootstrap
                 pkg/ipcbench
             L4RE_LAUNCH_ELF: |
+                if [ -n \"\$TMUX\" ] ; then
+                  set -- -C \"bp.terminal_0.terminal_command=tmux new-window -n %title telnet localhost %port\" \"\$@\"
+                else
+                  set -- -C bp.pl011_uart0.out_file=- -C bp.terminal_0.start_telnet=0 \"\$@\"
+                fi
+
                 exec FVP_BaseR_AEMv8R \\
                   -C bp.exclusive_monitor.monitor_access_level=1 \\
-                  -C bp.pl011_uart0.out_file=- \\
                   -C bp.refcounter.non_arch_start_at_default=1 \\
                   -C bp.vis.disable_visualisation=1 \\
                   -C cache_state_modelled=0 \\
@@ -233,10 +238,14 @@ multiPackage:
                 CONFIG_EXPERIMENTAL=y
                 # CONFIG_UVMM_VDEV_DEVICE_PCI_HOST_ECAM_GENERIC is not set
             L4RE_LAUNCH_ELF: |
+                if [ -n \"\$TMUX\" ] ; then
+                  set -- -C \"bp.terminal_0.terminal_command=tmux new-window -n %title telnet localhost %port\" \"\$@\"
+                else
+                  set -- -C bp.pl011_uart0.out_file=- -C bp.terminal_0.start_telnet=0 \"\$@\"
+                fi
+
                 exec FVP_BaseR_AEMv8R \\
                   -C bp.exclusive_monitor.monitor_access_level=1 \\
-                  -C bp.pl011_uart0.out_file=- \\
-                  -C bp.pl011_uart0.unbuffered_output=0 \\
                   -C bp.refcounter.non_arch_start_at_default=1 \\
                   -C bp.vis.disable_visualisation=1 \\
                   -C cache_state_modelled=0 \\
