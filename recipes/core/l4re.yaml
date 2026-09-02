@@ -6,8 +6,6 @@ depends:
       depends:
         - name: devel::dtc
           use: [tools]
-        - name: bsp::uboot-tools
-          use: [tools]
 
 checkoutSCM:
   - scm: git
@@ -100,7 +98,7 @@ checkoutSCM:
     dir: pkg/zlib
 
 buildTools: [host-toolchain, target-toolchain, flex, bison, perl]
-buildToolsWeak: [dtc, uboot-tools]
+buildToolsWeak: [dtc]
 buildVars: [ARCH, CROSS_COMPILE, L4RE_DEFCONFIG, L4RE_KCONFIG, L4RE_TARGETS,
             L4RE_MAKECONF]
 buildScript: |
@@ -141,7 +139,7 @@ buildScript: |
         IMAGES=( efi )
         EFI_NAME=bootaa64.efi
       else
-        IMAGES=( elf raw uimage )
+        IMAGES=( elf raw )
       fi
       ;;
     x86_64)
@@ -149,7 +147,7 @@ buildScript: |
       EFI_NAME=bootx64.efi
       ;;
     *)
-      IMAGES=( elf raw uimage )
+      IMAGES=( elf raw )
       ;;
   esac
 
@@ -171,10 +169,6 @@ buildScript: |
       raw)
         make rawimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
         IMG_NAME="bootstrap.raw"
-        ;;
-      uimage)
-        make uimage E=dummy MODULES_LIST="$BOB_CWD/modules.list"
-        IMG_NAME="bootstrap.uimage"
         ;;
     esac
     cp images/bootstrap_dummy.$i ../images/$IMG_NAME
