@@ -27,6 +27,9 @@ multiPackage:
                 exec qemu-system-x86_64 -M q35 -cpu host -enable-kvm -m 2048 \\
                   -smp 4 -bios \"\$FIRMWARE\" \\
                   -serial stdio -nographic -monitor none -cdrom \"IMAGE\"
+            QEMU_OPTIONS: >-
+                -M q35 -cpu host -enable-kvm -m 2048
+                -smp 4 -serial stdio -nographic -monitor none
             L4RE_LAUNCH_ELF: >-
                 exec qemu-system-x86_64 -M q35 -cpu host -enable-kvm -m 2048
                 -smp 4 -serial stdio -nographic -monitor none -kernel \"IMAGE\"
@@ -58,6 +61,10 @@ multiPackage:
                     FIASCO_DEFCONFIG: arm-virt-pl2
                     L4RE_KCONFIG: |
                         CONFIG_BUILD_ARCH_arm=y
+                    QEMU_OPTIONS: >-
+                        -M virt,virtualization=true
+                        -cpu cortex-a15 -smp 4 -m 1024 -serial stdio -nographic
+                        -monitor none
                     L4RE_LAUNCH_ELF: >-
                         exec qemu-system-arm -M virt,virtualization=true
                         -cpu cortex-a15 -smp 4 -m 1024 -serial stdio -nographic
@@ -83,6 +90,10 @@ multiPackage:
                         # CONFIG_ARM_GIC_MSI is not set
                         CONFIG_PERFORMANCE=y
                     L4RE_DEFCONFIG: arm64-virt-v8a
+                    QEMU_OPTIONS: >-
+                        -M virt,virtualization=true
+                        -cpu cortex-a57 -smp 4 -m 1024 -serial stdio -nographic
+                        -monitor none
                     L4RE_LAUNCH_ELF: >-
                         exec qemu-system-aarch64 -M virt,virtualization=true
                         -cpu cortex-a57 -smp 4 -m 1024 -serial stdio -nographic
