@@ -26,6 +26,7 @@ l:startv(
       sigma0        = L4.cast(L4.Proto.Factory, L4.Env.sigma0):create(L4.Proto.Sigma0);
       icu           = L4.Env.icu;
       iommu         = L4.Env.iommu;
+      dma_mgr       = L4.Env.dma_mgr;
       platform_ctl  = platform_ctl:svr(),
       jdb           = L4.Env.jdb,
 
@@ -47,13 +48,14 @@ l:startv(
   }, "rom/rtc");
 
 
-local mem_flags = L4.Mem_alloc_flags.Continuous
-                  | L4.Mem_alloc_flags.Pinned
-                  | L4.Mem_alloc_flags.Super_pages;
+local mem_flags_zephyr = L4.Mem_alloc_flags.Continuous
+                            | L4.Mem_alloc_flags.Pinned
+                            | L4.Mem_alloc_flags.Super_pages
+                            | 0x08; -- L4.Mem_alloc_flags.Fixed_paddr;
 
 local ram_zephyr = L4.Env.user_factory:create(L4.Proto.Dataspace,
                                               2 * 1024 * 1024,
-                                              mem_flags, 20, 0x02000000):m("rw");
+                                              mem_flags_zephyr, 20, 0x02000000):m("rw");
 
 l:startv(
   {
@@ -66,9 +68,13 @@ l:startv(
   "rom/uvmm", "-drom/virt-arm_r82-zephyr.dtb", "-krom/zephyr.elf")
 
 
+local mem_flags_linux = L4.Mem_alloc_flags.Continuous
+                        | L4.Mem_alloc_flags.Pinned
+                        | L4.Mem_alloc_flags.Super_pages;
+
 local ram_linux = L4.Env.user_factory:create(L4.Proto.Dataspace,
                                              256 * 1024 * 1024,
-                                             mem_flags, 20, 0x10000000):m("rw");
+                                             mem_flags_linux, 20):m("rw");
 
 l:startv(
   {
